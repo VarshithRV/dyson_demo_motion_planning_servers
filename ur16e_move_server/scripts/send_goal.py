@@ -3,6 +3,7 @@ import rclpy
 from rclpy.action import ActionClient
 from geometry_msgs.msg import PoseStamped
 from ur16e_move_server.action import MoveToPose
+import time
 
 def main():
     rclpy.init()
@@ -25,6 +26,8 @@ def main():
     future = client.send_goal_async(goal)
     rclpy.spin_until_future_complete(node, future)
     
+    time.sleep(10)
+
     goal_handle = future.result()
     if not goal_handle.accepted:
         node.get_logger().error('Goal rejected')
