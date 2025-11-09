@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  MoveIt末端执行器配置
+  
+  将这个内容添加到你的 MoveIt 配置包中的 
+  config/ur16e.srdf 文件
+-->
+<robot name="ur16e_with_suction_gripper">
+  
+  <!-- 定义末端执行器组 -->
+  <end_effector 
+    name="suction_gripper" 
+    parent_link="tool0" 
+    group="suction_gripper_group" 
+    parent_group="ur_manipulator"/>
+  
+  <!-- 末端执行器的link组 -->
+  <group name="suction_gripper_group">
+    <link name="suction_gripper"/>
+    <link name="suction_gripper_tip"/>
+  </group>
+  
+  <!-- 禁用末端执行器内部的碰撞检测 -->
+  <disable_collisions link1="suction_gripper" link2="wrist_3_link" reason="Adjacent"/>
+  <disable_collisions link1="suction_gripper" link2="tool0" reason="Adjacent"/>
+  
+  <!-- 如果需要定义抓取姿态 -->
+  <!-- 
+  <group_state name="open" group="suction_gripper_group">
+  </group_state>
+  
+  <group_state name="closed" group="suction_gripper_group">
+  </group_state>
+  -->
+  
+</robot>

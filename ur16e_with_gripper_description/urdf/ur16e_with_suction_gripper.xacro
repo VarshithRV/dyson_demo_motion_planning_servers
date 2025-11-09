@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur16e_with_rws_gripper">
+  
+  <!-- 
+    UR16e 机械臂 + RWS 夹具（使用真实的 STL mesh）
+    基于你原始的双臂配置
+  -->
+  
+  <!-- 参数定义 -->
+  <xacro:arg name="name" default="ur16e"/>
+  <xacro:arg name="tf_prefix" default=""/>
+  <xacro:arg name="joint_limits_parameters_file" default="$(find ur_description)/config/ur16e/joint_limits.yaml"/>
+  <xacro:arg name="kinematics_parameters_file" default="$(find ur_description)/config/ur16e/default_kinematics.yaml"/>
+  <xacro:arg name="physical_parameters_file" default="$(find ur_description)/config/ur16e/physical_parameters.yaml"/>
+  <xacro:arg name="visual_parameters_file" default="$(find ur_description)/config/ur16e/visual_parameters.yaml"/>
+  
+  <!-- 世界坐标系 -->
+  <link name="world"/>
+  
+  <!-- 加载UR16e机械臂 -->
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+  
+  <!-- 实例化UR16e机械臂 -->
+  <xacro:ur_robot
+    name="$(arg name)"
+    tf_prefix="$(arg tf_prefix)"
+    parent="world"
+    joint_limits_parameters_file="$(arg joint_limits_parameters_file)"
+    kinematics_parameters_file="$(arg kinematics_parameters_file)"
+    physical_parameters_file="$(arg physical_parameters_file)"
+    visual_parameters_file="$(arg visual_parameters_file)"
+    transmission_hw_interface="hardware_interface/PositionJointInterface"
+    safety_limits="false"
+    safety_pos_margin="0.15"
+    safety_k_position="20"
+    use_fake_hardware="true"
+    fake_sensor_commands="true"
+    sim_gazebo="false"
+    sim_ignition="false"
+    initial_positions="${dict(
+      shoulder_pan_joint=1.20110777344728,
+      shoulder_lift_joint=-1.5901812058332483,
+      elbow_joint=1.4020975961789934,
+      wrist_1_joint=-1.3838437395893834,
+      wrist_2_joint=4.713395037963343,
+      wrist_3_joint=-0.36870762683331165
+    )}"
+  >
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+  
+  <!-- ================================================================ -->
+  <!-- RWS 夹具末端执行器（使用真实的 STL mesh）-->
+  <!-- ================================================================ -->
+  
+  <!-- 夹具基座 link -->
+  <link name="$(arg tf_prefix)rws_gripper">
+    <!-- Visual - 使用真实的 STL mesh -->
+    <visual>
+      <origin xyz="-0.06 -0.045 0.0" rpy="0 0 0"/>
+      <geometry>
+        <!-- 
+          注意：你需要将 rws.STL 文件放在正确的位置
+          路径应该是: 
+          ~/ws_moveit/src/ur16e_with_gripper_description/meshes/rws.STL
+        -->
+        <mesh filename="package://ur16e_with_gripper_description/meshes/rws.STL" 
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="grey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    
+    <!-- Collision - 使用简化的圆柱体 -->
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.05" length="0.22"/>
+      </geometry>
+    </collision>
+    
+    <!-- Inertial -->
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.03" iyy="0.03" izz="0.03" 
+               ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+  
+  <!-- 连接夹具到 wrist_3 -->
+  <joint name="$(arg tf_prefix)wrist_3_link-rws_gripper" type="fixed">
+    <parent link="$(arg tf_prefix)wrist_3_link"/>
+    <child link="$(arg tf_prefix)rws_gripper"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- TCP (Tool Center Point / Point of Interest) -->
+  <link name="$(arg tf_prefix)rws_gripper_tcp"/>
+  
+  <joint name="$(arg tf_prefix)rws_gripper-tcp" type="fixed">
+    <parent link="$(arg tf_prefix)rws_gripper"/>
+    <child link="$(arg tf_prefix)rws_gripper_tcp"/>
+    <!-- 这是夹具尖端的位置，根据你原始的配置 -->
+    <origin xyz="-0.005 -0.004 0.109" rpy="0 0 0"/>
+  </joint>
+  
+</robot>

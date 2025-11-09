@@ -1,0 +1,9 @@
+# Goal - 简化的目标定义，类似于PickPlace.action
+geometry_msgs/PoseStamped target_pose
+---
+# Result - 简单的布尔结果
+bool result
+---
+# Feedback - 可选的反馈（保留以便监控进度）
+float32 progress
+string stage

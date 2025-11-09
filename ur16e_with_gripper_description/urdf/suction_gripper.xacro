@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="suction_gripper">
+  
+  <!-- 
+    吸盘夹具 (Suction Gripper) 
+    从ROS1迁移到ROS2
+    
+    使用方法：在你的机器人URDF/Xacro中包含这个文件
+    <xacro:include filename="suction_gripper.xacro"/>
+    <xacro:suction_gripper parent="tool0" prefix=""/>
+  -->
+  
+  <xacro:macro name="suction_gripper" params="parent:=tool0 prefix:='' *origin">
+    
+    <!-- 吸盘夹具主体 -->
+    <link name="${prefix}suction_gripper">
+      
+      <!-- 碰撞几何 - 简化的圆柱体 -->
+      <collision>
+        <origin xyz="0 0 0.09" rpy="0 ${pi} 0"/>
+        <geometry>
+          <cylinder radius="0.05" length="0.15"/>
+        </geometry>
+      </collision>
+      
+      <!-- 视觉模型 - STL网格 -->
+      <visual>
+        <origin xyz="0.05 -0.115 0.20" rpy="0 ${pi} 0"/>
+        <geometry>
+          <!-- 注意：需要修改package名称为你的包名 -->
+          <mesh filename="package://ur16e_with_gripper_description/meshes/suction_gripper.STL" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="gripper_material">
+          <color rgba="0.8 0.8 0.8 1.0"/>
+        </material>
+      </visual>
+      
+      <!-- 惯性参数 -->
+      <inertial>
+        <mass value="0.1"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia 
+          ixx="0.03" ixy="0.0"  ixz="0.0"
+          iyy="0.03" iyz="0.0"
+          izz="0.03"/>
+      </inertial>
+    </link>
+    
+    <!-- 连接到机械臂末端的关节 -->
+    <joint name="${prefix}tool0_to_suction_gripper" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}suction_gripper"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+    
+    <!-- 吸盘功能点 (POI - Point of Interest) -->
+    <!-- 这是实际执行抓取的位置 -->
+    <link name="${prefix}suction_gripper_tip"/>
+    
+    <joint name="${prefix}suction_gripper_to_tip" type="fixed">
+      <parent link="${prefix}suction_gripper"/>
+      <child link="${prefix}suction_gripper_tip"/>
+      <!-- 吸盘尖端位置：从夹具基座偏移 -->
+      <origin xyz="-0.004 -0.002 0.173" rpy="0 0 0"/>
+    </joint>
+    
+  </xacro:macro>
+  
+</robot>
